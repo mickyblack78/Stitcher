@@ -1,1 +1,511 @@
 
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<title>Media Stitcher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f3f1; --panel:#ffffff; --panel-2:#ececea; --ink:#171716; --muted:#6b6b66; --line:#dddcd6;
+  --accent:#e8490f; --accent-ink:#ffffff; --accent-soft:#fff0e9;
+  --ok:#16794a; --warn:#9a6a00; --radius:14px;
+  --shadow:0 10px 30px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#121211; --panel:#1c1c1a; --panel-2:#262624; --ink:#f2f1ec; --muted:#a3a39b; --line:#33332f; --accent:#ff5a1f; --accent-soft:#2e1a12; --shadow:0 10px 30px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5}
+a{color:var(--accent)}
+button,[role="button"],select,input{font:inherit}
+button,select,input[type="text"],input[type="number"]{min-height:44px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 18px 56px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:6px 0 18px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;font-family:Archivo,sans-serif;font-weight:800;letter-spacing:-.02em;font-size:20px}
+.brand-mark{width:40px;height:40px;border-radius:10px;background:var(--ink);color:var(--bg);display:grid;place-items:center;flex:0 0 auto}
+.brand small{display:block;font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pill{font-family:"IBM Plex Mono",monospace;font-size:12px;border:1px solid var(--line);background:var(--panel);padding:8px 11px;border-radius:999px;white-space:nowrap}
+.hero{padding:28px 0 8px;display:grid;grid-template-columns:1.35fr .65fr;gap:28px;align-items:end}
+.hero h1{font-family:Archivo,sans-serif;font-size:clamp(32px,5vw,56px);line-height:.95;letter-spacing:-.04em;margin:0 0 14px;font-weight:800}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p{margin:0;color:var(--muted);font-size:17px;max-width:58ch}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat b{font-family:Archivo,sans-serif;font-size:22px;display:block;line-height:1}
+.stat span{font-size:12.5px;color:var(--muted)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;margin-top:22px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.panel-h{padding:16px 18px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.panel-h h2{font-family:Archivo,sans-serif;font-size:18px;margin:0;letter-spacing:-.02em}
+.panel-h p{margin:3px 0 0;color:var(--muted);font-size:13.5px}
+.dropzone{margin:16px 18px 18px;border:1.8px dashed #b9b8b0;border-radius:14px;background:var(--panel-2);padding:26px 18px;text-align:center;transition:.15s}
+.dropzone.drag{border-color:var(--accent);background:var(--accent-soft)}
+.dropzone strong{font-family:Archivo,sans-serif;font-size:18px;display:block}
+.dropzone p{color:var(--muted);margin:6px auto 16px;max-width:46ch;font-size:14px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:0 18px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;text-decoration:none}
+.btn:hover{border-color:var(--ink)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{background:#c93e0b;border-color:#c93e0b}
+.btn-dark{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-sm{min-height:38px;padding:0 13px;font-size:13.5px}
+.icon-btn{width:38px;height:38px;min-height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel);display:inline-grid;place-items:center;cursor:pointer;padding:0;flex:0 0 auto}
+.icon-btn:hover{border-color:var(--ink)}
+.queue{list-style:none;margin:0;padding:6px 12px 14px;display:flex;flex-direction:column;gap:10px}
+.queue:empty{display:none}
+.clip{display:grid;grid-template-columns:28px 92px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:10px}
+.clip.dragging{opacity:.45}
+.clip-num{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);text-align:center}
+.thumb{width:92px;height:58px;border-radius:8px;overflow:hidden;background:#000;display:grid;place-items:center;position:relative}
+.thumb img,.thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.thumb-badge{position:absolute;left:5px;bottom:5px;background:rgba(0,0,0,.78);color:#fff;font-family:"IBM Plex Mono",monospace;font-size:10px;padding:2px 5px;border-radius:999px}
+.clip-meta{min-width:0}
+.clip-name{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clip-sub{color:var(--muted);font-size:12.5px;display:flex;gap:10px;flex-wrap:wrap;margin-top:2px}
+.clip-actions{display:flex;gap:6px;align-items:center}
+.dur-input{width:64px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:0 8px;min-height:36px}
+.empty{margin:0 18px 18px;padding:18px;border-radius:12px;background:var(--accent-soft);color:var(--muted);font-size:14px}
+.empty strong{color:var(--ink)}
+.monitor{margin:0 18px 18px;background:#0c0c0c;border-radius:12px;overflow:hidden;aspect-ratio:16/9;display:grid;place-items:center;color:#888;position:relative}
+.monitor img,.monitor video{width:100%;height:100%;object-fit:contain;display:block}
+.monitor-label{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.7);color:#fff;font-family:"IBM Plex Mono",monospace;font-size:11px;padding:4px 8px;border-radius:999px}
+.settings{padding:6px 18px 18px;display:flex;flex-direction:column;gap:16px}
+.field label{display:block;font-weight:600;font-size:13.5px;margin-bottom:7px}
+.field select,.field input[type="number"]{width:100%;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:0 12px}
+.field p{margin:6px 0 0;color:var(--muted);font-size:12.5px}
+.seg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.seg button{border:1px solid var(--line);background:var(--panel-2);border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;padding:8px 4px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.check{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent)}
+.check b{font-size:14px;display:block}
+.check span{font-size:12.5px;color:var(--muted);display:block}
+.progress-wrap{display:none;margin:0 18px 18px}
+.progress-wrap.show{display:block}
+.progress{height:10px;background:var(--panel-2);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.progress-text{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);margin-top:8px;display:flex;justify-content:space-between;gap:10px}
+.render-canvas{width:100%;border-radius:10px;background:#000;display:none;margin-top:12px}
+.render-canvas.show{display:block}
+.result{display:none;margin:0 18px 18px;border-top:1px solid var(--line);padding-top:16px}
+.result.show{display:block}
+.result video{width:100%;border-radius:12px;background:#000}
+.result-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.note{font-size:13px;color:var(--muted);background:var(--panel-2);border-radius:10px;padding:12px 13px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.step-num{font-family:"IBM Plex Mono",monospace;color:var(--accent);font-weight:600;font-size:12px}
+.step h3{font-family:Archivo,sans-serif;margin:6px 0 6px;font-size:16px}
+.step p{margin:0;color:var(--muted);font-size:13.5px}
+.github{margin-top:18px;padding:20px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center}
+.github h2{font-family:Archivo,sans-serif;margin:0 0 6px;font-size:20px;letter-spacing:-.02em}
+.github p,.github li{color:var(--muted);font-size:14px}
+.github ol{margin:8px 0 0;padding-left:20px}
+.github code{font-family:"IBM Plex Mono",monospace;font-size:12.5px;background:var(--panel-2);padding:2px 6px;border-radius:6px;color:var(--ink)}
+footer{color:var(--muted);font-size:12.5px;text-align:center;padding:22px 0 0}
+.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:18px;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:20;max-width:92vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:860px){
+  .hero{grid-template-columns:1fr}
+  .layout{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .github{grid-template-columns:1fr}
+  .clip{grid-template-columns:22px 72px minmax(0,1fr); }
+  .thumb{width:72px;height:50px}
+  .clip-actions{grid-column:1/-1;justify-content:flex-end}
+  .topbar .pill{display:none}
+}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M7 4v16M17 4v16M2 9h5M2 15h5M17 9h5M17 15h5"></path></svg></span>
+      <span>Media Stitcher<small>Browser video joiner</small></span>
+    </div>
+    <span class="pill">● 100% in your browser — files never upload</span>
+  </div>
+
+  <section class="hero">
+    <div>
+      <h1>Stitch five clips —<br>or fifty — into <em>one video.</em></h1>
+      <p>Pick videos and photos from your device, put them in order, and export a single video you can download. Photos become timed slides, videos play back-to-back, and the sound from your videos is kept.</p>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><b id="statCount">1</b><span>clips in queue</span></div>
+      <div class="stat"><b id="statDuration">0:10</b><span>estimated length</span></div>
+      <div class="stat"><b>WebM / MP4</b><span>export format*</span></div>
+      <div class="stat"><b>No upload</b><span>works offline once loaded</span></div>
+    </div>
+  </section>
+
+  <div class="layout">
+    <main>
+      <section class="panel" aria-labelledby="queueHeading">
+        <div class="panel-h">
+          <div><h2 id="queueHeading">1 · Your clips in order</h2><p>Drag clips to reorder, or use the arrows. Click a clip to preview it.</p></div>
+          <button class="btn btn-sm" id="clearBtn" type="button">Clear all</button>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          <strong>Drop videos &amp; photos here</strong>
+          <p>MP4, MOV, WebM, JPG, PNG, WebP and more — from Files, Photos, Drive, or anywhere on this device.</p>
+          <label class="btn btn-primary" for="fileInput" style="cursor:pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg>
+            Choose media
+          </label>
+          <input id="fileInput" type="file" accept="video/*,image/*,.mov,.mkv" multiple="" hidden="">
+          <div style="margin-top:12px"><button class="btn btn-sm" id="addMoreBtn" type="button">Add more files</button></div>
+        </div>
+
+        <div class="empty" id="emptyState" style="display: none;"><strong>Nothing here yet.</strong> Add the five videos you want to join — or any mix of videos and pictures. They’ll appear here as a timeline you can reorder.</div>
+        <ol class="queue" id="queue"><li class="clip" draggable="true" data-id="1"><div class="clip-num">01</div><div class="thumb"><video src="blob:null/1a1daa36-1a01-4140-af4e-2704e6eabb44" playsinline="" preload="metadata"></video><span class="thumb-badge">VIDEO</span></div><div class="clip-meta"><div class="clip-name">8169.mp4</div><div class="clip-sub"><span>6.2 MB</span><span class="mono">0:10</span></div></div><div class="clip-actions"><button type="button" class="icon-btn" title="Move up" aria-label="Move up">↑</button><button type="button" class="icon-btn" title="Move down" aria-label="Move down">↓</button><button type="button" class="icon-btn" title="Remove" aria-label="Remove">✕</button></div></li></ol>
+
+        <div class="monitor" id="monitor">
+          <span class="monitor-label">PREVIEW</span>
+          <span id="monitorEmpty" style="display: none;">Preview will appear here<br><span style="font-size:13px">Add a clip and tap it to see it</span></span>
+        <video src="blob:null/1a1daa36-1a01-4140-af4e-2704e6eabb44" controls="" playsinline="" autoplay=""></video></div>
+      </section>
+
+      <div class="steps">
+        <div class="step"><div class="step-num">01</div><h3>Add</h3><p>Choose any videos or pictures from your saved sources. Nothing is sent to a server.</p></div>
+        <div class="step"><div class="step-num">02</div><h3>Order &amp; time</h3><p>Drag to reorder. Set how long each photo stays on screen — videos use their full length.</p></div>
+        <div class="step"><div class="step-num">03</div><h3>Stitch &amp; download</h3><p>Hit Stitch. The video is rendered here in the page, then yours to save and share.</p></div>
+      </div>
+
+      <section class="panel github">
+        <div>
+          <h2>Keep it in your GitHub repo</h2>
+          <p>This tool is a single HTML file — no build step, no dependencies to install.</p>
+          <ol>
+            <li>Download the standalone file with the button →</li>
+            <li>Save it as <code>media-stitcher.html</code> in your repo</li>
+            <li>Open it in a browser, or publish it with GitHub Pages</li>
+          </ol>
+        </div>
+        <button class="btn btn-dark" id="downloadHtmlBtn" type="button">⤓ &nbsp;Download this app (.html)</button>
+      </section>
+    </main>
+
+    <aside class="panel" aria-labelledby="exportHeading">
+      <div class="panel-h"><div><h2 id="exportHeading">2 · Export settings</h2><p>These apply to the finished video.</p></div></div>
+      <div class="settings">
+        <div class="field">
+          <label>Canvas size</label>
+          <div class="seg" id="sizeSeg" role="group" aria-label="Canvas size">
+            <button type="button" data-size="1280x720" aria-pressed="true">720p<br><span class="mono" style="font-size:11px;font-weight:400">16:9</span></button>
+            <button type="button" data-size="1920x1080" aria-pressed="false">1080p<br><span class="mono" style="font-size:11px;font-weight:400">16:9</span></button>
+            <button type="button" data-size="720x1280" aria-pressed="false">Portrait<br><span class="mono" style="font-size:11px;font-weight:400">9:16</span></button>
+          </div>
+          <p>Portrait suits phone clips and Reels / Shorts. Square? Pick 720p and use Fit — or stitch, then crop in your editor.</p>
+        </div>
+
+        <div class="field">
+          <label for="fitSelect">How clips fill the frame</label>
+          <select id="fitSelect">
+            <option value="contain" selected="">Fit whole clip — black bars if needed</option>
+            <option value="cover">Fill frame — crops edges if needed</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="photoDur">Photo duration (seconds)</label>
+          <input type="number" id="photoDur" value="3" min="0.5" max="30" step="0.5">
+          <p>Default for new photos. You can change each photo individually in the list.</p>
+        </div>
+
+        <label class="check"><input type="checkbox" id="audioToggle" checked=""><span><b>Keep video sound</b><span>Mixes the audio from each video into the export, in order.</span></span></label>
+        <label class="check"><input type="checkbox" id="fadeToggle"><span><b>Fade between clips</b><span>Quick fade through black at each join — hides hard cuts.</span></span></label>
+
+        <div class="note"><strong style="color:var(--ink)">Heads up on timing:</strong> stitching happens in real time — a 2-minute timeline takes about 2 minutes to render. Keep this tab open and in front while it works. *Export is MP4 where your browser supports it, otherwise WebM (plays in Chrome, Edge, Firefox and most editors).</div>
+
+        <button class="btn btn-primary" id="stitchBtn" type="button" style="width:100%;min-height:52px;font-size:16px">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+          Stitch into one video
+        </button>
+        <button class="btn" id="cancelBtn" type="button" style="width:100%;display:none">Cancel stitching</button>
+      </div>
+
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress"><i id="progressBar"></i></div>
+        <div class="progress-text"><span id="progressLabel">Preparing…</span><span id="progressPct">0%</span></div>
+        <canvas class="render-canvas" id="renderCanvas" width="1280" height="720"></canvas>
+        <p style="font-size:12.5px;color:var(--muted);margin:8px 0 0;text-align:center">Live render — this is what’s being recorded</p>
+      </div>
+
+      <div class="result" id="result">
+        <h3 style="font-family:Archivo,sans-serif;margin:0 0 4px;font-size:17px">Your stitched video is ready</h3>
+        <p class="mono" id="resultMeta" style="font-size:12px;color:var(--muted);margin:0 0 12px"></p>
+        <video id="resultVideo" controls="" playsinline=""></video>
+        <div class="result-actions">
+          <a class="btn btn-primary" id="downloadBtn" href="#" download="stitched-video.webm">Download video</a>
+          <button class="btn" id="stitchAgainBtn" type="button">Stitch again</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>Media Stitcher runs entirely on this device. Your files are read locally and never uploaded. Rendering uses your browser’s built-in Canvas &amp; MediaRecorder.</footer>
+</div>
+<div class="toast" id="toast" role="status">Added 1 clip</div>
+
+<script>
+(function(){
+  "use strict";
+  var items = []; // {id,file,type,url,name,size,duration,isImageDur}
+  var idCounter = 1;
+  var selectedSize = "1280x720";
+  var cancelled = false;
+  var currentRecorder = null;
+
+  var $ = function(id){ return document.getElementById(id); };
+  var fileInput = $("fileInput"), queueEl = $("queue"), dropzone = $("dropzone");
+  var toastEl = $("toast");
+  function toast(msg){ toastEl.textContent = msg; toastEl.classList.add("show"); setTimeout(function(){ toastEl.classList.remove("show"); }, 3400); }
+  function fmtTime(s){ if(!isFinite(s)||s==null) s=0; s=Math.max(0,Math.round(s)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+  function fmtSize(b){ if(b<1024) return b+" B"; if(b<1048576) return (b/1024).toFixed(1)+" KB"; return (b/1048576).toFixed(1)+" MB"; }
+  function totalDuration(){ return items.reduce(function(a,it){ return a + (it.duration||0); },0); }
+  function updateStats(){ $("statCount").textContent = items.length; $("statDuration").textContent = fmtTime(totalDuration()); $("emptyState").style.display = items.length ? "none" : "block"; $("stitchBtn").disabled = items.length===0; }
+
+  // Size segmented control
+  $("sizeSeg").addEventListener("click", function(e){
+    var btn = e.target.closest("button"); if(!btn) return;
+    selectedSize = btn.getAttribute("data-size");
+    Array.prototype.forEach.call($("sizeSeg").querySelectorAll("button"), function(b){ b.setAttribute("aria-pressed", b===btn ? "true":"false"); });
+  });
+
+  function previewItem(item){
+    var monitor = $("monitor");
+    monitor.querySelectorAll("img,video").forEach(function(n){ n.remove(); });
+    var empty = $("monitorEmpty"); if(empty) empty.style.display="none";
+    if(item.type==="image"){
+      var img=document.createElement("img"); img.src=item.url; img.alt=item.name; monitor.appendChild(img);
+    } else {
+      var v=document.createElement("video"); v.src=item.url; v.controls=true; v.playsInline=true; v.autoplay=true; v.muted=false; monitor.appendChild(v);
+    }
+  }
+
+  function renderQueue(){
+    queueEl.innerHTML="";
+    items.forEach(function(item, idx){
+      var li=document.createElement("li"); li.className="clip"; li.draggable=true; li.dataset.id=item.id;
+      li.innerHTML =
+        '<div class="clip-num">'+String(idx+1).padStart(2,"0")+'</div>'+
+        '<div class="thumb"></div>'+
+        '<div class="clip-meta"><div class="clip-name"></div><div class="clip-sub"></div></div>'+
+        '<div class="clip-actions"></div>';
+      var thumb=li.querySelector(".thumb");
+      if(item.type==="image"){ var im=document.createElement("img"); im.src=item.url; im.alt=""; thumb.appendChild(im); }
+      else { var vd=document.createElement("video"); vd.src=item.url; vd.muted=true; vd.playsInline=true; vd.preload="metadata"; thumb.appendChild(vd); }
+      var badge=document.createElement("span"); badge.className="thumb-badge"; badge.textContent=item.type==="image"?"PHOTO":"VIDEO"; thumb.appendChild(badge);
+      li.querySelector(".clip-name").textContent=item.name;
+      var sub=li.querySelector(".clip-sub");
+      if(item.type==="image"){
+        sub.innerHTML='<span>'+fmtSize(item.size)+'</span><span>Show for</span>';
+        var inp=document.createElement("input"); inp.type="number"; inp.className="dur-input"; inp.min="0.5"; inp.max="60"; inp.step="0.5"; inp.value=item.duration; inp.setAttribute("aria-label","Seconds for "+item.name);
+        inp.addEventListener("change", function(){ var v=parseFloat(inp.value); if(isFinite(v)&&v>0){ item.duration=v; updateStats(); } });
+        sub.appendChild(inp); var sec=document.createElement("span"); sec.textContent="sec"; sub.appendChild(sec);
+      } else {
+        sub.innerHTML='<span>'+fmtSize(item.size)+'</span><span class="mono">'+fmtTime(item.duration)+'</span>';
+      }
+      var actions=li.querySelector(".clip-actions");
+      function mkBtn(label, title, fn){
+        var b=document.createElement("button"); b.type="button"; b.className="icon-btn"; b.title=title; b.setAttribute("aria-label",title); b.innerHTML=label; b.addEventListener("click", function(e){ e.stopPropagation(); fn(); }); return b;
+      }
+      actions.appendChild(mkBtn("↑","Move up", function(){ if(idx>0){ var t=items[idx-1]; items[idx-1]=items[idx]; items[idx]=t; renderQueue(); updateStats(); } }));
+      actions.appendChild(mkBtn("↓","Move down", function(){ if(idx<items.length-1){ var t=items[idx+1]; items[idx+1]=items[idx]; items[idx]=t; renderQueue(); updateStats(); } }));
+      actions.appendChild(mkBtn("✕","Remove", function(){ URL.revokeObjectURL(item.url); items=items.filter(function(x){return x.id!==item.id;}); renderQueue(); updateStats(); toast("Removed "+item.name); }));
+      li.addEventListener("click", function(){ previewItem(item); });
+      li.addEventListener("dragstart", function(e){ li.classList.add("dragging"); e.dataTransfer.effectAllowed="move"; e.dataTransfer.setData("text/plain", String(item.id)); });
+      li.addEventListener("dragend", function(){ li.classList.remove("dragging"); });
+      li.addEventListener("dragover", function(e){ e.preventDefault(); });
+      li.addEventListener("drop", function(e){
+        e.preventDefault(); var dragId=parseInt(e.dataTransfer.getData("text/plain"),10);
+        var from=items.findIndex(function(x){return x.id===dragId;}); var to=items.findIndex(function(x){return x.id===item.id;});
+        if(from>-1&&to>-1&&from!==to){ var moved=items.splice(from,1)[0]; items.splice(to,0,moved); renderQueue(); updateStats(); }
+      });
+      queueEl.appendChild(li);
+    });
+    updateStats();
+  }
+
+  function addFiles(fileList){
+    var files=Array.prototype.slice.call(fileList||[]); if(!files.length) return;
+    var defaultPhotoDur=parseFloat($("photoDur").value)||3;
+    var added=0;
+    files.forEach(function(file){
+      var isVideo=file.type.indexOf("video/")===0;
+      var isImage=file.type.indexOf("image/")===0;
+      // Some .mov/.mkv files report empty type — fall back to extension
+      if(!isVideo&&!isImage){ var ext=(file.name.split(".").pop()||"").toLowerCase(); if(["mp4","mov","webm","mkv","m4v"].indexOf(ext)>-1) isVideo=true; else if(["jpg","jpeg","png","gif","webp","bmp"].indexOf(ext)>-1) isImage=true; }
+      if(!isVideo&&!isImage){ toast("Skipped "+file.name+" — not a video or image"); return; }
+      var item={ id:idCounter++, file:file, type:isVideo?"video":"image", url:URL.createObjectURL(file), name:file.name, size:file.size, duration:isImage?defaultPhotoDur:0 };
+      items.push(item); added++;
+      if(isVideo){
+        var probe=document.createElement("video"); probe.preload="metadata"; probe.muted=true;
+        probe.onloadedmetadata=function(){ item.duration=probe.duration||0; renderQueue(); };
+        probe.onerror=function(){ renderQueue(); };
+        probe.src=item.url;
+      }
+    });
+    renderQueue();
+    if(added) toast(added===1 ? "Added 1 clip" : "Added "+added+" clips");
+    if(items.length&&added) previewItem(items[items.length-1]);
+  }
+
+  fileInput.addEventListener("change", function(){ addFiles(fileInput.files); fileInput.value=""; });
+  $("addMoreBtn").addEventListener("click", function(){ fileInput.click(); });
+  $("clearBtn").addEventListener("click", function(){ items.forEach(function(it){ URL.revokeObjectURL(it.url); }); items=[]; renderQueue(); toast("Queue cleared"); });
+  ["dragenter","dragover"].forEach(function(ev){ dropzone.addEventListener(ev, function(e){ e.preventDefault(); dropzone.classList.add("drag"); }); });
+  ["dragleave","drop"].forEach(function(ev){ dropzone.addEventListener(ev, function(e){ e.preventDefault(); dropzone.classList.remove("drag"); }); });
+  dropzone.addEventListener("drop", function(e){ addFiles(e.dataTransfer.files); });
+  document.addEventListener("dragover", function(e){ e.preventDefault(); });
+  document.addEventListener("drop", function(e){ e.preventDefault(); });
+
+  // ---------- Stitching engine ----------
+  function pickMime(){
+    var candidates=["video/mp4;codecs=avc1.640028,mp4a.40.2","video/mp4","video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"];
+    if(typeof MediaRecorder==="undefined") return "";
+    for(var i=0;i<candidates.length;i++){ if(MediaRecorder.isTypeSupported(candidates[i])) return candidates[i]; }
+    return "";
+  }
+  function drawContain(ctx, source, sw, sh, W, H, fit){
+    ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H);
+    if(!sw||!sh) return;
+    var scale = fit==="cover" ? Math.max(W/sw,H/sh) : Math.min(W/sw,H/sh);
+    var w=sw*scale, h=sh*scale, x=(W-w)/2, y=(H-h)/2;
+    ctx.drawImage(source,x,y,w,h);
+  }
+  function wait(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
+
+  async function stitch(){
+    if(!items.length){ toast("Add at least one video or photo first"); return; }
+    if(typeof MediaRecorder==="undefined"){ toast("This browser can't record video — try Chrome or Edge"); return; }
+    cancelled=false;
+    var parts=selectedSize.split("x"); var W=parseInt(parts[0],10), H=parseInt(parts[1],10);
+    var fit=$("fitSelect").value;
+    var keepAudio=$("audioToggle").checked;
+    var fade=$("fadeToggle").checked;
+    var canvas=$("renderCanvas"); canvas.width=W; canvas.height=H; canvas.classList.add("show");
+    var ctx=canvas.getContext("2d"); ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H);
+    $("progressWrap").classList.add("show"); $("result").classList.remove("show");
+    $("stitchBtn").disabled=true; $("cancelBtn").style.display="inline-flex";
+    $("progressLabel").textContent="Preparing…";
+
+    var audioCtx=null, audioDest=null;
+    if(keepAudio){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); audioDest=audioCtx.createMediaStreamDestination(); }catch(e){ audioCtx=null; } }
+
+    var canvasStream=canvas.captureStream(30);
+    var tracks=canvasStream.getVideoTracks().slice();
+    if(audioDest){ audioDest.stream.getAudioTracks().forEach(function(t){ tracks.push(t); }); }
+    var combined=new MediaStream(tracks);
+    var mime=pickMime();
+    var recorder; try{ recorder=new MediaRecorder(combined, mime?{mimeType:mime, videoBitsPerSecond:8000000}:{videoBitsPerSecond:8000000}); }catch(e){ toast("Couldn't start recorder in this browser"); cleanup(); return; }
+    currentRecorder=recorder;
+    var chunks=[]; recorder.ondataavailable=function(e){ if(e.data&&e.data.size) chunks.push(e.data); };
+    var stopped=new Promise(function(res){ recorder.onstop=res; });
+    recorder.start(250);
+
+    var total=totalDuration()||1; var elapsedBefore=0;
+    function setProgress(curItemElapsed, idx){
+      var pct=Math.min(100, Math.round(((elapsedBefore+curItemElapsed)/total)*100));
+      $("progressBar").style.width=pct+"%"; $("progressPct").textContent=pct+"%";
+      $("progressLabel").textContent="Clip "+(idx+1)+" of "+items.length+" — "+items[idx].name;
+    }
+
+    try{
+      for(var i=0;i<items.length;i++){
+        if(cancelled) break;
+        var item=items[i]; setProgress(0,i);
+        if(item.type==="image"){
+          var img=await new Promise(function(res,rej){ var im=new Image(); im.onload=function(){res(im);}; im.onerror=rej; im.src=item.url; });
+          var durMs=item.duration*1000; var start=performance.now();
+          await new Promise(function(res){
+            (function loop(){
+              if(cancelled) return res();
+              var t=performance.now()-start; var p=Math.min(1,t/durMs);
+              drawContain(ctx,img,img.naturalWidth,img.naturalHeight,W,H,fit);
+              if(fade){ var a=0; if(p<0.12) a=1-(p/0.12); else if(p>0.88) a=(p-0.88)/0.12; if(a>0){ ctx.fillStyle="rgba(0,0,0,"+a+")"; ctx.fillRect(0,0,W,H); } }
+              setProgress(t/1000,i);
+              if(t>=durMs) return res(); requestAnimationFrame(loop);
+            })();
+          });
+        } else {
+          var video=document.createElement("video"); video.src=item.url; video.playsInline=true; video.crossOrigin="anonymous";
+          var srcNode=null;
+          if(audioCtx&&audioDest){ try{ srcNode=audioCtx.createMediaElementSource(video); srcNode.connect(audioDest); }catch(e){ srcNode=null; } }
+          if(!srcNode){ video.muted=true; }
+          await new Promise(function(res){
+            var done=false; function finish(){ if(done) return; done=true; res(); }
+            video.onended=finish; video.onerror=finish;
+            // Safety timeout: duration + 5s
+            setTimeout(finish, ((item.duration||30)+8)*1000);
+            video.play().then(function(){
+              (function loop(){
+                if(done||cancelled) return finish();
+                if(!video.paused&&!video.ended){
+                  drawContain(ctx,video,video.videoWidth,video.videoHeight,W,H,fit);
+                  if(fade&&isFinite(video.duration)&&video.duration>0){ var p=video.currentTime/video.duration; var a=0; if(video.currentTime<0.25) a=1-(video.currentTime/0.25); else if(p>0.97) a=Math.min(1,(p-0.97)/0.03); if(a>0){ ctx.fillStyle="rgba(0,0,0,"+a+")"; ctx.fillRect(0,0,W,H); } }
+                  setProgress(video.currentTime||0,i);
+                }
+                if(video.ended) return finish();
+                requestAnimationFrame(loop);
+              })();
+            }).catch(finish);
+          });
+          try{ video.pause(); if(srcNode) srcNode.disconnect(); }catch(e){}
+        }
+        elapsedBefore+=item.duration||0;
+      }
+    }catch(err){ /* continue to finalise whatever was recorded */ }
+
+    try{ recorder.stop(); }catch(e){}
+    await stopped; await wait(150);
+    if(audioCtx){ try{ audioCtx.close(); }catch(e){} }
+    cleanup();
+
+    if(cancelled){ toast("Stitching cancelled"); return; }
+    var type=mime&&mime.indexOf("mp4")>-1 ? "video/mp4" : "video/webm";
+    var ext=type==="video/mp4" ? "mp4" : "webm";
+    var blob=new Blob(chunks,{type:type});
+    if(!blob.size){ toast("Nothing was recorded — try again, keeping this tab in front"); return; }
+    var url=URL.createObjectURL(blob);
+    var rv=$("resultVideo"); rv.src=url;
+    var dl=$("downloadBtn"); dl.href=url; dl.setAttribute("download","stitched-video."+ext);
+    $("resultMeta").textContent=items.length+" clips · "+fmtTime(totalDuration())+" · "+fmtSize(blob.size)+" · "+W+"×"+H+" · "+ext.toUpperCase();
+    $("result").classList.add("show");
+    $("progressBar").style.width="100%"; $("progressPct").textContent="100%"; $("progressLabel").textContent="Done";
+    $("result").scrollIntoView({behavior:"smooth",block:"center"});
+    toast("Done — your stitched video is ready to download");
+    function cleanup(){ $("stitchBtn").disabled=items.length===0; $("cancelBtn").style.display="none"; currentRecorder=null; }
+  }
+  // cleanup defined inside stitch shadows — provide outer cleanup for early return path
+  function cleanupOuter(){ $("stitchBtn").disabled=items.length===0; $("cancelBtn").style.display="none"; }
+
+  $("stitchBtn").addEventListener("click", stitch);
+  $("stitchAgainBtn").addEventListener("click", function(){ window.scrollTo({top:0,behavior:"smooth"}); });
+  $("cancelBtn").addEventListener("click", function(){ cancelled=true; if(currentRecorder&&currentRecorder.state!=="inactive"){ try{currentRecorder.stop();}catch(e){} } });
+
+  $("downloadHtmlBtn").addEventListener("click", function(){
+    var html="<!doctype html>\n"+document.documentElement.outerHTML;
+    var blob=new Blob([html],{type:"text/html"}); var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob); a.download="media-stitcher.html"; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },2000);
+    toast("Saved media-stitcher.html — add it to your GitHub repo");
+  });
+
+  updateStats();
+})();
+</script>
+
+
+</body></html>
